@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: netflix-app
-        image: balucc/netflix:56
+        image: balucc/netflix:57
         ports:
         - containerPort: 80

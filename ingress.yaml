@@ -6,6 +6,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    nginx.ingress.kubernetes.io/access-log-format: '{"remote_addr": "$remote_addr", "x-forwarded-for": "$http_x_forwarded_for", "request_time": "$request_time", "upstream_response_time": "$upstream_response_time", "request": "$request", "status": "$status"}'
 spec:
   ingressClassName: nginx
   rules:

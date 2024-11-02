@@ -4,8 +4,8 @@ metadata:
   name: netflix-ingress
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    kubernetes.io/ingress.class: "nginx"
 spec:
+  ingressClassName: nginx
   rules:
   - host: netflix.bccdevops.site  # Replace with your domain or use a dummy for testing
     http:

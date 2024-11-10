@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: netflix-appv2
+  labels:
+    app: netflix-appv2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: netflix-appv2
+  template:
+    metadata:
+      labels:
+        app: netflix-appv2
+    spec:
+      containers:
+      - name: netflix-appv2
+        image: balucc/netflix:65
+        ports:
+        - containerPort: 80

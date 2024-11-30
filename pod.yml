@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: netflix
+spec:
+  containers:
+  - name: netflix
+    image: balucc/netflix:36
+    ports:
+    - containerPort: 80

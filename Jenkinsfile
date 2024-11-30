@@ -53,24 +53,24 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'Docker-Hub') {
+                    withDockerRegistry(credentialsId: 'Acr-ID') {
                         sh 'docker run --rm --privileged tonistiigi/binfmt --install all'
                         sh 'docker buildx create --name mybuilder --driver docker-container --use'
                         sh 'docker buildx inspect --bootstrap'
-                        sh 'docker buildx build --platform linux/amd64,linux/arm64 --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c -t balucc/netflix:$BUILD_NUMBER --push .'
+                        sh 'docker buildx build --platform linux/amd64,linux/arm64 --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c -t bcccontainerreistry.azurecr.io/netflix:$BUILD_NUMBER --push .'
                     }
                 }
             }
         }
         stage('Trivy Image Scan') {
             steps {
-                sh 'trivy image balucc/netflix:latest > trivyimage.txt'
+                sh 'trivy image bcccontainerreistry.azurecr.io/netflix:$BUILD_NUMBER > trivyimage.txt'
             }
         }
         stage('Edit Deployment File') {
             steps {
                 script {
-                    sh "sed -i 's|image: balucc/netflix:.*|image: balucc/netflix:${BUILD_NUMBER}|' deployment.yaml"
+                    sh "sed -i 's|image: bcccontainerreistry.azurecr.io/netflix:.*|image: bcccontainerreistry.azurecr.io/netflix:${BUILD_NUMBER}|' deployment.yaml"
                 }
             }
         }
@@ -78,6 +78,7 @@ pipeline {
             steps {
                 sh 'kubectl apply -f deployment.yaml'
                 sh 'kubectl apply -f service.yaml'
+                sh 'kubectl apply -f ingress.yaml'
             }
         }    
     }

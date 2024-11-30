@@ -53,7 +53,7 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 script {
-                    withDockerRegistry(credentialsId: 'Acr-ID', url: 'https://bcccontainerreistry.azurecr.io') {
+                    withDockerRegistry(credentialsId: 'Acr-ID', url: 'bcccontainerreistry.azurecr.io') {
                         sh 'docker run --rm --privileged tonistiigi/binfmt --install all'
                         sh 'docker buildx create --name mybuilder --driver docker-container --use'
                         sh 'docker buildx inspect --bootstrap'

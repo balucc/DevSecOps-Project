@@ -54,6 +54,7 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'Acr-ID', url: 'bcccontainerreistry.azurecr.io') {
+                        sh 'az acr login --name BccContainerReistry'
                         sh 'docker run --rm --privileged tonistiigi/binfmt --install all'
                         sh 'docker buildx create --name mybuilder --driver docker-container --use'
                         sh 'docker buildx inspect --bootstrap'

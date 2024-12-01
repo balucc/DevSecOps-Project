@@ -16,6 +16,6 @@ spec:
     spec:
       containers:
       - name: netflix-app
-        image: bcccontainerreistry.azurecr.io/BccContainerReistry:65
+        image: bcccontainerreistry.azurecr.io/bcccontainerreistry:65
         ports:
         - containerPort: 80

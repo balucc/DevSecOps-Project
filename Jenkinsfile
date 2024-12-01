@@ -61,7 +61,8 @@ pipeline {
                 sh 'docker run --rm --privileged tonistiigi/binfmt --install all'
                 sh 'docker buildx create --name mybuilder --driver docker-container --use'
                 sh 'docker buildx inspect --bootstrap'
-                sh 'docker buildx build --platform linux/amd64,linux/arm64 --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c -t $DOCKER_IMAGE_TAG . --load'
+                sh 'docker buildx build --platform linux/amd64,linux/arm64 --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c -t $DOCKER_IMAGE_TAG . --output type=local,dest=./output'
+                sh 'docker load < ./output/image.tar'
 
             }
 

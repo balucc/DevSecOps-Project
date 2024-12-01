@@ -9,7 +9,7 @@ pipeline {
         DOCKER_BUILDKIT = "1"
         DOCKER_REGISTRY = 'bcccontainerreistry.azurecr.io'
         DOCKER_REPO = 'BccContainerReistry'
-        DOCKER_IMAGE_TAG = '"${DOCKER_REGISTRY}/${DOCKER_REPO}:$BUILD_NUMBER"'
+        DOCKER_IMAGE_TAG = "${DOCKER_REGISTRY}/${DOCKER_REPO}:${BUILD_NUMBER}"
         ACR_URL = 'bcccontainerreistry.azurecr.io'
         ACR_CREDENTIALS_ID = 'Acr-ID'
     }
@@ -66,7 +66,7 @@ pipeline {
             }
 
         }
-        stage('Docker Build & Push') {
+        stage('Docker Push') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: "${ACR_CREDENTIALS_ID}", url: "https://${ACR_URL}") {

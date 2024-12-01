@@ -57,6 +57,7 @@ pipeline {
         }
         stage('Docker Build'){
             steps{
+                sh 'docker buildx rm mybuilder'
                 sh 'docker run --rm --privileged tonistiigi/binfmt --install all'
                 sh 'docker buildx create --name mybuilder --driver docker-container --use'
                 sh 'docker buildx inspect --bootstrap'

@@ -8,7 +8,7 @@ pipeline {
         SCANNER_HOME = tool 'sonar-scanner'
         DOCKER_BUILDKIT = "1"
         DOCKER_REGISTRY = 'bcccontainerreistry.azurecr.io'
-        DOCKER_REPO = 'Netflix'
+        DOCKER_REPO = 'netflix'
         DOCKER_IMAGE_TAG = "${DOCKER_REGISTRY}/${DOCKER_REPO}:${BUILD_NUMBER}"
         ACR_URL = 'bcccontainerreistry.azurecr.io'
         ACR_CREDENTIALS_ID = 'Acr-ID'
@@ -76,20 +76,20 @@ pipeline {
                         -t ${DOCKER_IMAGE_TAG} . \
                         --push
                     '''
-                    sh 'docker pull bcccontainerreistry.azurecr.io/Netflix:${BUILD_NUMBER}'
+                    sh 'docker pull bcccontainerreistry.azurecr.io/netflix:${BUILD_NUMBER}'
         }
     }
 }}
 
         stage('Trivy Image Scan') {
             steps {
-                sh 'trivy image bcccontainerreistry.azurecr.io/Netflix:${BUILD_NUMBER} > trivyimage.txt'
+                sh 'trivy image bcccontainerreistry.azurecr.io/netflix:${BUILD_NUMBER} > trivyimage.txt'
             }
         }
         stage('Edit Deployment File') {
             steps {
                 script {
-                    sh "sed -i 's|image: bcccontainerreistry.azurecr.io/Netflix:*|image: bcccontainerreistry.azurecr.io/Netflix:${BUILD_NUMBER}|' deployment.yaml"
+                    sh "sed -i 's|image: bcccontainerreistry.azurecr.io/netflix:*|image: bcccontainerreistry.azurecr.io/netflix:${BUILD_NUMBER}|' deployment.yaml"
                 }
             }
         }

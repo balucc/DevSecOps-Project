@@ -8,7 +8,7 @@ pipeline {
         SCANNER_HOME = tool 'sonar-scanner'
         DOCKER_BUILDKIT = "1"
         DOCKER_REGISTRY = 'bcccontainerreistry.azurecr.io'
-        DOCKER_REPO = 'bcccontainerreistry'
+        DOCKER_REPO = 'Netflix'
         DOCKER_IMAGE_TAG = "${DOCKER_REGISTRY}/${DOCKER_REPO}:${BUILD_NUMBER}"
         ACR_URL = 'bcccontainerreistry.azurecr.io'
         ACR_CREDENTIALS_ID = 'Acr-ID'
@@ -55,49 +55,41 @@ pipeline {
                 sh "trivy fs . > trivyfs.txt"
             }
         }
-        stage('Docker Build'){
-            steps{
+        stage('Docker Build') {
+            steps {
                 script {
+                    withDockerRegistry(credentialsId: "${ACR_CREDENTIALS_ID}", url: "https://${ACR_URL}") {
+                    // Setup buildx and multi-architecture support
                     sh 'docker buildx ls | grep mybuilder && docker buildx rm mybuilder || true'
                     sh 'docker run --rm --privileged tonistiigi/binfmt --install all'
                     sh 'docker buildx create --name mybuilder --driver docker-container --use'
                     sh 'docker buildx inspect --bootstrap'
+                    
+                    // Ensure output directory exists
                     sh 'mkdir -p ./output'
+                    
+                    // Build and push image
                     sh '''
                     docker buildx build \
-                            --platform linux/amd64,linux/arm64 \
-                            --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c \
-                            -t bcccontainerreistry.azurecr.io/bcccontainerreistry:${BUILD_NUMBER} . \
-                            --output type=local,dest=./output
+                        --platform linux/amd64,linux/arm64 \
+                        --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c \
+                        -t ${DOCKER_IMAGE_TAG} . \
+                        --push
                     '''
-                    sh 'docker buildx imagetools create bcccontainerreistry.azurecr.io/bcccontainerreistry:${BUILD_NUMBER} --output ./output/image.tar'
-                    sh '''
-                    echo "Verifying tarball in output directory:"
-                    ls -l ./output/image.tar
-                    '''
+                    sh 'docker pull bcccontainerreistry.azurecr.io/Netflix:${BUILD_NUMBER}'
         }
     }
-}
+}}
 
-        stage('Docker Push') {
-            steps {
-                script {
-                    withDockerRegistry(credentialsId: "${ACR_CREDENTIALS_ID}", url: "https://${ACR_URL}") {
-                        docker.image("${DOCKER_IMAGE_TAG}").push()
-                        
-                    }
-                }
-            }
-        }
         stage('Trivy Image Scan') {
             steps {
-                sh 'trivy image bcccontainerreistry.azurecr.io/bcccontainerreistry:${BUILD_NUMBER} > trivyimage.txt'
+                sh 'trivy image bcccontainerreistry.azurecr.io/Netflix:${BUILD_NUMBER} > trivyimage.txt'
             }
         }
         stage('Edit Deployment File') {
             steps {
                 script {
-                    sh "sed -i 's|image: bcccontainerreistry.azurecr.io/bcccontainerreistry:*|image: bcccontainerreistry.azurecr.io/bcccontainerreistry:${BUILD_NUMBER}|' deployment.yaml"
+                    sh "sed -i 's|image: bcccontainerreistry.azurecr.io/Netflix:*|image: bcccontainerreistry.azurecr.io/Netflix:${BUILD_NUMBER}|' deployment.yaml"
                 }
             }
         }

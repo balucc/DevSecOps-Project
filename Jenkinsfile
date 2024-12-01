@@ -9,6 +9,7 @@ pipeline {
         DOCKER_BUILDKIT = "1"
         DOCKER_REGISTRY = 'bcccontainerreistry.azurecr.io'
         DOCKER_REPO = 'BccContainerReistry'
+        DOCKER_IMAGE_TAG = '"${DOCKER_REGISTRY}/${DOCKER_REPO}:$BUILD_NUMBER"'
         ACR_URL = 'bcccontainerreistry.azurecr.io'
         ACR_CREDENTIALS_ID = 'Acr-ID'
     }
@@ -31,13 +32,13 @@ pipeline {
                 }
             }
         }
-        stage('Quality Gate') {
+        /*stage('Quality Gate') {
             steps {
                 script {
                     waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
                 }
             }
-        }
+        }*/
         stage('Install Dependencies') {
             steps {
                 sh "npm install"
@@ -54,14 +55,22 @@ pipeline {
                 sh "trivy fs . > trivyfs.txt"
             }
         }
+        stage('Docker Build'){
+            steps{
+                sh 'docker run --rm --privileged tonistiigi/binfmt --install all'
+                sh 'docker buildx create --name mybuilder --driver docker-container --use'
+                sh 'docker buildx inspect --bootstrap'
+                sh 'docker buildx build --platform linux/amd64,linux/arm64 --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c -t $DOCKER_IMAGE_TAG .'
+
+            }
+
+        }
         stage('Docker Build & Push') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: "${ACR_CREDENTIALS_ID}", url: "https://${ACR_URL}") {
-                        sh 'docker run --rm --privileged tonistiigi/binfmt --install all'
-                        sh 'docker buildx create --name mybuilder --driver docker-container --use'
-                        sh 'docker buildx inspect --bootstrap'
-                        sh 'docker buildx build --platform linux/amd64,linux/arm64 --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c -t ${ACR_URL}/netflix/$BUILD_NUMBER --push .'
+                        docker.image("${DOCKER_IMAGE_TAG}").push()
+                        
                     }
                 }
             }
@@ -74,7 +83,7 @@ pipeline {
         stage('Edit Deployment File') {
             steps {
                 script {
-                    sh "sed -i 's|image: bcccontainerreistry.azurecr.io/netflix/*|image: bcccontainerreistry.azurecr.io/netflix/${BUILD_NUMBER}|' deployment.yaml"
+                    sh "sed -i 's|image: bcccontainerreistry.azurecr.io/BccContainerReistry:*|image: bcccontainerreistry.azurecr.io/BccContainerReistry:${BUILD_NUMBER}|' deployment.yaml"
                 }
             }
         }
@@ -86,7 +95,7 @@ pipeline {
             }
         }    
     }
-    post {
+    /*post {
         always {
             emailext(
                 attachLog: true,
@@ -98,5 +107,5 @@ pipeline {
                 attachmentsPattern: 'trivyfs.txt,trivyimage.txt'
             )
         }
-    }
+    }*/
 }

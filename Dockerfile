@@ -1,4 +1,4 @@
-FROM bcccontainerreistry.azurecr.io/node/16.17.0-alpine:latest as builder
+FROM node:16.17.0-alpine as builder
 WORKDIR /app
 COPY ./package.json .
 COPY ./yarn.lock .

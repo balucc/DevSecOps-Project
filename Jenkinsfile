@@ -89,7 +89,7 @@ pipeline {
         stage('Edit Deployment File') {
             steps {
                 script {
-                    sh "sed -i 's|image: bcccontainerreistry.azurecr.io/netflix:*|image: bcccontainerreistry.azurecr.io/netflix:${BUILD_NUMBER}|' deployment.yaml"
+                    sh "sed -i 's|image: bcccontainerreistry.azurecr.io/netflix:*|image: bcccontainerreistry.azurecr.io/netflix:${BUILD_NUMBER}|' deployment.yml"
                 }
             }
         }

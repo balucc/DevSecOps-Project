@@ -7,7 +7,9 @@ pipeline {
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
         DOCKER_BUILDKIT = "1"
-        ACR_LOGIN_SERVER = 'bcccontainerreistry.azurecr.io'
+        DOCKER_REGISTRY = 'bcccontainerreistry.azurecr.io'
+        DOCKER_REPO = 'BccContainerReistry'
+        ACR_URL = 'bcccontainerreistry.azurecr.io'
         ACR_CREDENTIALS_ID = 'Acr-ID'
     }
     stages {
@@ -55,11 +57,11 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                 script {
-                    withDockerRegistry([credentialsId: "${ACR_CREDENTIALS_ID}", url: "https://${ACR_LOGIN_SERVER}"]) {
+                    withDockerRegistry(credentialsId: "${ACR_CREDENTIALS_ID}", url: "https://${ACR_URL}") {
                         sh 'docker run --rm --privileged tonistiigi/binfmt --install all'
                         sh 'docker buildx create --name mybuilder --driver docker-container --use'
                         sh 'docker buildx inspect --bootstrap'
-                        sh 'docker buildx build --platform linux/amd64,linux/arm64 --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c -t ${ACR_LOGIN_SERVER}/netflix/$BUILD_NUMBER --push .'
+                        sh 'docker buildx build --platform linux/amd64,linux/arm64 --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c -t ${ACR_URL}/netflix/$BUILD_NUMBER --push .'
                     }
                 }
             }

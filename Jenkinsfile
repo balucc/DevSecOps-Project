@@ -57,18 +57,28 @@ pipeline {
         }
         stage('Docker Build'){
             steps{
-                sh 'docker buildx rm mybuilder'
-                sh 'docker run --rm --privileged tonistiigi/binfmt --install all'
-                sh 'docker buildx create --name mybuilder --driver docker-container --use'
-                sh 'docker buildx inspect --bootstrap'
-                sh 'mkdir -p ./output'  /* Ensure the output directory exists*/
-                sh 'docker buildx build --platform linux/amd64,linux/arm64 --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c -t $DOCKER_IMAGE_TAG . --output type=local,dest=./output'
-                sh 'docker save $DOCKER_IMAGE_TAG -o ./output/image.tar'  /* Save the image to image.tar*/
-                sh 'docker load < ./output/image.tar'  /* Load the image*/
-
-            }
-
+                script {
+                    sh 'docker buildx ls | grep mybuilder && docker buildx rm mybuilder || true'
+                    sh 'docker run --rm --privileged tonistiigi/binfmt --install all'
+                    sh 'docker buildx create --name mybuilder --driver docker-container --use'
+                    sh 'docker buildx inspect --bootstrap'
+                    sh 'mkdir -p ./output'
+                    sh '''
+                    docker buildx build \
+                            --platform linux/amd64,linux/arm64 \
+                            --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c \
+                            -t bcccontainerreistry.azurecr.io/bcccontainerreistry:${BUILD_NUMBER} . \
+                            --output type=local,dest=./output
+                    '''
+                    sh 'docker buildx imagetools create bcccontainerreistry.azurecr.io/bcccontainerreistry:${BUILD_NUMBER} --output ./output/image.tar'
+                    sh '''
+                    echo "Verifying tarball in output directory:"
+                    ls -l ./output/image.tar
+                    '''
         }
+    }
+}
+
         stage('Docker Push') {
             steps {
                 script {

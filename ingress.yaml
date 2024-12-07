@@ -12,10 +12,10 @@ spec:
   - host: netflix.bccdevops.site  # Replace with your domain or use a dummy for testing
     http:
       paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: netflix-service
-            port:
-              number: 80
+        - pathType: Prefix
+          path: /
+          backend:
+            service:
+              name: netflix-service
+              port:
+                number: 80

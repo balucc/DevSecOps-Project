@@ -67,7 +67,7 @@ pipeline {
 
         stage('Trivy Image Scan') {
             steps {
-                sh 'trivy image bcccontainerreistry.azurecr.io/netflix:${BUILD_NUMBER} > trivyimage.txt'
+                sh 'trivy image mydevopsregistry.azurecr.io/netflix:${BUILD_NUMBER} > trivyimage.txt'
             }
         }
         stage('Edit Deployment File') {

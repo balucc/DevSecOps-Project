@@ -58,7 +58,7 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: "${ACR_CREDENTIALS_ID}", url: "https://${ACR_URL}") {
-                        sh "docker build --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c -t netflix ."
+                        sh "docker build --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07cgi -t netflix ."
                         sh "docker tag netflix nasi101/netflix:${BUILD_NUMBER} "
                         sh "docker push nasi101/netflix:${BUILD_NUMBER}"
         }

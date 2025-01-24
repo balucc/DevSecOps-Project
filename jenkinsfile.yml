@@ -6,12 +6,11 @@ pipeline {
     }
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
-        DOCKER_BUILDKIT = "1"
-        DOCKER_REGISTRY = 'bcccontainerreistry.azurecr.io'
+        DOCKER_REGISTRY = 'mydevopsregistry.azurecr.io'
         DOCKER_REPO = 'netflix'
         DOCKER_IMAGE_TAG = "${DOCKER_REGISTRY}/${DOCKER_REPO}:${BUILD_NUMBER}"
-        ACR_URL = 'bcccontainerreistry.azurecr.io'
-        ACR_CREDENTIALS_ID = 'Acr-ID'
+        ACR_URL = 'mydevopsregistry.azurecr.io'
+        ACR_CREDENTIALS_ID = 'ACR-ID'
     }
     stages {
         stage('clean ws') {
@@ -55,28 +54,13 @@ pipeline {
                 sh "trivy fs . > trivyfs.txt"
             }
         }
-        stage('Docker Build') {
+        stage('Docker Build & Push') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: "${ACR_CREDENTIALS_ID}", url: "https://${ACR_URL}") {
-                    // Setup buildx and multi-architecture support
-                    sh 'docker buildx ls | grep mybuilder && docker buildx rm mybuilder || true'
-                    sh 'docker run --rm --privileged tonistiigi/binfmt --install all'
-                    sh 'docker buildx create --name mybuilder --driver docker-container --use'
-                    sh 'docker buildx inspect --bootstrap'
-                    
-                    // Ensure output directory exists
-                    sh 'mkdir -p ./output'
-                    
-                    // Build and push image
-                    sh '''
-                    docker buildx build \
-                        --platform linux/amd64,linux/arm64 \
-                        --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c \
-                        -t ${DOCKER_IMAGE_TAG} . \
-                        --push
-                    '''
-                    sh 'docker pull bcccontainerreistry.azurecr.io/netflix:${BUILD_NUMBER}'
+                        sh "docker build --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07c -t netflix ."
+                        sh "docker tag netflix nasi101/netflix:${BUILD_NUMBER} "
+                        sh "docker push nasi101/netflix:${BUILD_NUMBER}"
         }
     }
 }}
@@ -89,7 +73,7 @@ pipeline {
         stage('Edit Deployment File') {
             steps {
                 script {
-                    sh "sed -i 's|image: bcccontainerreistry.azurecr.io/netflix:.*|image: bcccontainerreistry.azurecr.io/netflix:${BUILD_NUMBER}|' deployment.yml"
+                    sh "sed -i 's|image: mydevopsregistry.azurecr.io/netflix:.*|image: mydevopsregistry.azurecr.io/netflix:${BUILD_NUMBER}|' deployment.yml"
                 }
             }
         }
@@ -97,7 +81,6 @@ pipeline {
             steps {
                 sh 'kubectl apply -f deployment.yml'
                 sh 'kubectl apply -f service.yaml'
-                sh 'kubectl apply -f ingress.yaml'
             }
         }    
     }

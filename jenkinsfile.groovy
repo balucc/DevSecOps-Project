@@ -6,10 +6,10 @@ pipeline {
     }
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
-        DOCKER_REGISTRY = 'mydevopsregistry.azurecr.io'
+        DOCKER_REGISTRY = 'bccdevopsite.azurecr.io'
         DOCKER_REPO = 'netflix'
         DOCKER_IMAGE_TAG = "${DOCKER_REGISTRY}/${DOCKER_REPO}:${BUILD_NUMBER}"
-        ACR_URL = 'mydevopsregistry.azurecr.io'
+        ACR_URL = 'bccdevopsite.azurecr.io'
         ACR_CREDENTIALS_ID = 'ACR-ID'
     }
     stages {
@@ -31,24 +31,24 @@ pipeline {
                 }
             }
         }
-        /*stage('Quality Gate') {
+        stage('Quality Gate') {
             steps {
                 script {
                     waitForQualityGate abortPipeline: false, credentialsId: 'Sonar-token'
                 }
             }
-        }*/
+        }
         stage('Install Dependencies') {
             steps {
                 sh "npm install"
             }
         }
-        /*stage('OWASP SCAN') {
+        stage('OWASP SCAN') {
             steps {
                 dependencyCheck additionalArguments: '--nvdApiKey fb5da539-fea3-4307-8d0a-54c2fe097dd7 --scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'Dp-check'
                 dependencyCheckPublisher pattern: '**//*dependency-check-report.xml'
             }
-        }*/
+        }
         stage('Trivy FS Scan') {
             steps {
                 sh "trivy fs . > trivyfs.txt"
@@ -73,7 +73,7 @@ pipeline {
         stage('Edit Deployment File') {
             steps {
                 script {
-                    sh "sed -i 's|image: mydevopsregistry.azurecr.io/netflix:.*|image: mydevopsregistry.azurecr.io/netflix:${BUILD_NUMBER}|' deployment.yml"
+                    sh "sed -i 's|image: mydevopsregistry.azurecr.io/netflix:.*|image: bccdevopsite.azurecr.io/netflix:${BUILD_NUMBER}|' deployment.yml"
                 }
             }
         }

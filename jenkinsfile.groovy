@@ -59,15 +59,15 @@ pipeline {
                 script {
                     withDockerRegistry(credentialsId: "${ACR_CREDENTIALS_ID}", url: "https://${ACR_URL}") {
                         sh "docker build --build-arg TMDB_V3_API_KEY=c25230d950fe8c1f6aac8d96d863b07cgi -t netflix ."
-                        sh "docker tag netflix mydevopsregistry.azurecr.io/netflix:${BUILD_NUMBER} "
-                        sh "docker push mydevopsregistry.azurecr.io/netflix:${BUILD_NUMBER}"
+                        sh "docker tag netflix bccdevopsite.azurecr.io/netflix:${BUILD_NUMBER} "
+                        sh "docker push bccdevopsite.azurecr.io/netflix:${BUILD_NUMBER}"
         }
     }
 }}
 
         stage('Trivy Image Scan') {
             steps {
-                sh 'trivy image mydevopsregistry.azurecr.io/netflix:${BUILD_NUMBER} > trivyimage.txt'
+                sh 'trivy image bccdevopsite.azurecr.io/netflix:${BUILD_NUMBER} > trivyimage.txt'
             }
         }
         stage('Edit Deployment File') {
